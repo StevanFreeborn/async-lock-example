@@ -11,6 +11,7 @@ await CreateSampleCsvIfNeeded();
 
 List<Product> products = await GetProductsFromCsv();
 Console.WriteLine($"Read {products.Count} products from CSV file.");
+AsyncLock @lock = new();
 
 Task[] importTasks = new Task[3];
 
@@ -20,6 +21,8 @@ for (int i = 0; i < importTasks.Length; i++)
   {
     foreach (Product product in products)
     {
+      using var _ = await @lock.LockAsync();
+
       bool exists = await CheckIfProductExists(product.Name);
 
       if (exists)
